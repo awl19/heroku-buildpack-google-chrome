@@ -104,17 +104,14 @@ fi
 
 topic "Installing Google Chrome from the $channel channel."
 
-
 chrome_version=""
 
 # Detect requested channel or default to stable
 if [ -f $ENV_DIR/CHROME_VERSION ]; then
   chrome_version=$(cat $ENV_DIR/CHROME_VERSION)
 else
-  error "CHROME_VERSION can not be empty"
+  error "CHROME_VERSION cannot be empty"
 fi
-
-PACKAGES="$PACKAGES https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_$chrome_version-1_amd64.deb"
 
 APT_CACHE_DIR="$CACHE_DIR/apt/cache"
 APT_STATE_DIR="$CACHE_DIR/apt/state"
@@ -139,6 +136,15 @@ for PACKAGE in $PACKAGES; do
     apt-get $APT_OPTIONS -y --force-yes -d install --reinstall $PACKAGE | indent
   fi
 done
+
+# new Google Chrome download location
+ZIP_URL="https://storage.googleapis.com/chrome-for-testing-public/$chrome_version/linux64/chrome-linux64.zip"
+ZIP_LOCATION="$BUILD_DIR/chrome.zip"
+
+topic "Pulling down Chrome version $chrome_version from $ZIP_URL"
+curl --silent --show-error --fail --retry 3 --retry-connrefused --connect-timeout 10 -o "${ZIP_LOCATION}" "${ZIP_URL}" | indent
+unzip -q -o "$ZIP_LOCATION" -d "$BUILD_DIR" | indent
+rm -f "$ZIP_LOCATION"
 
 mkdir -p $BUILD_DIR/.apt
 
