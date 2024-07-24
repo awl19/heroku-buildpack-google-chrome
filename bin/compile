@@ -2,10 +2,10 @@
 # bin/compile <build-dir> <cache-dir>
 
 # fail fast
-# set -e
+set -e
 
 # debug
-set -x
+# set -x
 
 # parse and derive params
 BUILD_DIR=$1
@@ -187,7 +187,9 @@ topic "Creating google-chrome shims"
 BIN_DIR=$BUILD_DIR/.apt/usr/bin
 topic "BIN_DIR is: $BIN_DIR"
 
-rm $BIN_DIR/$SHIM
+# remove this line for now, it's preventing production from deploying
+#rm $BIN_DIR/$SHIM
+
 cat <<EOF >$BIN_DIR/$SHIM
 #!/usr/bin/env bash
 
