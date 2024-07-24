@@ -2,10 +2,10 @@
 # bin/compile <build-dir> <cache-dir>
 
 # fail fast
-set -e
+# set -e
 
 # debug
-# set -x
+set -x
 
 # parse and derive params
 BUILD_DIR=$1
@@ -30,6 +30,8 @@ function indent() {
     *)      sed -u "$c";;
   esac
 }
+
+topic "BUILD_DIR is: $BUILD_DIR"
 
 # Detect requested channel or default to stable
 if [ -f $ENV_DIR/GOOGLE_CHROME_CHANNEL ]; then
@@ -142,6 +144,7 @@ ZIP_URL="https://storage.googleapis.com/chrome-for-testing-public/$chrome_versio
 ZIP_LOCATION="$BUILD_DIR/chrome.zip"
 
 topic "Pulling down Chrome version $chrome_version from $ZIP_URL"
+topic "Saving to and unzipping from $ZIP_LOCATION"
 curl --silent --show-error --fail --retry 3 --retry-connrefused --connect-timeout 10 -o "${ZIP_LOCATION}" "${ZIP_URL}" | indent
 unzip -q -o "$ZIP_LOCATION" -d "$BUILD_DIR" | indent
 rm -f "$ZIP_LOCATION"
@@ -182,6 +185,7 @@ find $BUILD_DIR/.apt -type f -ipath '*/pkgconfig/*.pc' | xargs --no-run-if-empty
 topic "Creating google-chrome shims"
 
 BIN_DIR=$BUILD_DIR/.apt/usr/bin
+topic "BIN_DIR is: $BIN_DIR"
 
 rm $BIN_DIR/$SHIM
 cat <<EOF >$BIN_DIR/$SHIM
