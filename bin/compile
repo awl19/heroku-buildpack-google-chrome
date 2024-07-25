@@ -31,8 +31,6 @@ function indent() {
   esac
 }
 
-topic "BUILD_DIR is: $BUILD_DIR"
-
 # Detect requested channel or default to stable
 if [ -f $ENV_DIR/GOOGLE_CHROME_CHANNEL ]; then
   channel=$(cat $ENV_DIR/GOOGLE_CHROME_CHANNEL)
@@ -115,6 +113,12 @@ else
   error "CHROME_VERSION cannot be empty"
 fi
 
+#PACKAGES="$PACKAGES https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_$chrome_version-1_amd64.deb"
+# temporarily hardcoding our specific version of chrome
+PACKAGES="$PACKAGES https://mirror.cs.uchicago.edu/google-chrome/pool/main/g/google-chrome-stable/google-chrome-stable_116.0.5845.96-1_amd64.deb"
+
+topic "Pulling down Chrome $CHROME_VERSION from https://mirror.cs.uchicago.edu/google-chrome/pool/main/g/google-chrome-stable/google-chrome-stable_116.0.5845.96-1_amd64.deb"
+
 APT_CACHE_DIR="$CACHE_DIR/apt/cache"
 APT_STATE_DIR="$CACHE_DIR/apt/state"
 
@@ -138,16 +142,6 @@ for PACKAGE in $PACKAGES; do
     apt-get $APT_OPTIONS -y --force-yes -d install --reinstall $PACKAGE | indent
   fi
 done
-
-# new Google Chrome download location
-ZIP_URL="https://storage.googleapis.com/chrome-for-testing-public/$chrome_version/linux64/chrome-linux64.zip"
-ZIP_LOCATION="$BUILD_DIR/chrome.zip"
-
-topic "Pulling down Chrome version $chrome_version from $ZIP_URL"
-topic "Saving to and unzipping from $ZIP_LOCATION"
-curl --silent --show-error --fail --retry 3 --retry-connrefused --connect-timeout 10 -o "${ZIP_LOCATION}" "${ZIP_URL}" | indent
-unzip -q -o "$ZIP_LOCATION" -d "$BUILD_DIR" | indent
-rm -f "$ZIP_LOCATION"
 
 mkdir -p $BUILD_DIR/.apt
 
@@ -185,11 +179,8 @@ find $BUILD_DIR/.apt -type f -ipath '*/pkgconfig/*.pc' | xargs --no-run-if-empty
 topic "Creating google-chrome shims"
 
 BIN_DIR=$BUILD_DIR/.apt/usr/bin
-topic "BIN_DIR is: $BIN_DIR"
 
-# remove this line for now, it's preventing production from deploying
-#rm $BIN_DIR/$SHIM
-
+rm $BIN_DIR/$SHIM
 cat <<EOF >$BIN_DIR/$SHIM
 #!/usr/bin/env bash
 
